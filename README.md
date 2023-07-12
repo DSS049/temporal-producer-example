@@ -14,3 +14,9 @@ TEMPORAL_NAMESPACE=telikos-temporal-cdt
 ~~~
 https://cdt-westeurope-01-primary-web.maersk-digital.net/namespaces/telikos-temporal-cdt/workflows/
 ~~~
+
+
+### CURL Request
+~~~
+curl --location 'http://localhost:8080/temporal/send'
+~~~
