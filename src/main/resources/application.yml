@@ -1,0 +1,6 @@
+
+TEMPORAL_TASK_QUEUE_NAME: activityPlanTaskQueue
+
+temporal:
+  activity-plan:
+    task-queue-name: ${TEMPORAL_TASK_QUEUE_NAME}
