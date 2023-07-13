@@ -3,6 +3,7 @@ package com.temporal.producer.example.controller;
 import com.maersk.composition.propagator.MDCContextPropagator;
 import com.temporal.producer.example.config.TemporalWorkerProducerConfiguration;
 import com.temporal.producer.example.model.ActivityPlanDomain;
+import io.temporal.api.enums.v1.WorkflowIdReusePolicy;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
 import java.time.Instant;
@@ -53,6 +54,7 @@ public class TemporalController {
                 "ActivityPlanWorkflow", WorkflowOptions.newBuilder()
                         .setTaskQueue(worker.getActivityPlanTaskQueueName())
                         .setContextPropagators(Collections.singletonList(new MDCContextPropagator()))
+                        .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
                         .setWorkflowId(activityPlanDomain.getOrderId())
                         .build());
 
