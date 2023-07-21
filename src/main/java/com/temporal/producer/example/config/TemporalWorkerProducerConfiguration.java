@@ -2,6 +2,7 @@ package com.temporal.producer.example.config;
 
 import com.maersk.composition.service.TemporalClientProvider;
 import io.temporal.client.WorkflowClient;
+import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerFactoryOptions;
 import lombok.Getter;
@@ -28,7 +29,9 @@ public class TemporalWorkerProducerConfiguration implements ApplicationRunner {
         client = temporalClientProvider.getTemporalClientInstance();
         WorkerFactoryOptions workerFactoryOptions = temporalClientProvider.getWorkerFactoryOptions();
         WorkerFactory factory = WorkerFactory.newInstance(client, workerFactoryOptions);
-        factory.newWorker(activityPlanTaskQueueName);
+       // Worker worker = factory.newWorker(activityPlanTaskQueueName);
+        Worker worker = factory.newWorker("feedbackActivityTaskQueueWF");
+        worker.registerWorkflowImplementationTypes(BookingFeedbackWorkflowImpl.class);
         factory.start();
     }
 

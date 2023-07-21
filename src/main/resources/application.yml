@@ -1,6 +1,9 @@
 
 TEMPORAL_TASK_QUEUE_NAME: activityPlanTaskQueue
+TEMPORAL_FEEDBACK_TASK_QUEUE_NAME: feedbackActivityTaskQueue
 
 temporal:
   activity-plan:
     task-queue-name: ${TEMPORAL_TASK_QUEUE_NAME}
+  feedback:
+    task-queue-name: ${TEMPORAL_FEEDBACK_TASK_QUEUE_NAME}
