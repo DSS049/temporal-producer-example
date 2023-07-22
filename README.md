@@ -18,6 +18,7 @@ https://cdt-westeurope-01-primary-web.maersk-digital.net/namespaces/telikos-temp
 
 ### CURL Request
 ~~~
-curl --location 'http://localhost:8086/temporal/send/FDYV6W5RH8F'
+curl --location 'http://localhost:8086/temporal/send/FDYV6W5RH8F' \
+--header 'status: Ready For Planning'
 ~~~
 

@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,7 @@ public class TemporalController {
 
 
     @GetMapping("/send/{bookingId}")
-    public String hello(@PathVariable String bookingId) {
+    public String hello(@PathVariable String bookingId, @RequestHeader String status) {
 //                ActivityPlanDomain activityPlanDomain = ActivityPlanDomain.builder()
 //                .eventName("Ready For Planning")
 //                .activityDateTime(Instant.now().toString())
@@ -44,7 +45,7 @@ public class TemporalController {
         Feedback feedback = Feedback.builder()
                 //.bookingId(getServicePlanNo())
                 .bookingId(bookingId)
-                .workProcessStatus("Send To Execution").timestamp(Instant.now()).build();
+                .workProcessStatus(status).timestamp(Instant.now()).build();
 
         sendToActivityTemporalQueue(feedback);
 
