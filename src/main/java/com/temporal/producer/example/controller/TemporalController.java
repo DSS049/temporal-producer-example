@@ -30,37 +30,34 @@ public class TemporalController {
 
     @GetMapping("/send/{bookingId}")
     public String hello(@PathVariable String bookingId, @RequestHeader String status) {
-//                ActivityPlanDomain activityPlanDomain = ActivityPlanDomain.builder()
-//                .eventName("Ready For Planning")
-//                .activityDateTime(Instant.now().toString())
-//                .productName("Export Intermodal FCL")
-//                .domainName("Booking")
-//                .orderId(getServicePlanNo())
-//                .bookingId(getServicePlanNo())
-//                .userId("dhananjaya.singhar@maersk.com")
-//                .status("")
-//                .userName("Dhananjaya Samanta Singhar")
-//                .domainData("").build();
-
         Feedback feedback = Feedback.builder()
-                //.bookingId(getServicePlanNo())
                 .bookingId(bookingId)
                 .workProcessStatus(status).timestamp(Instant.now()).build();
 
         sendToActivityTemporalQueue(feedback);
-
         log.info("Data sent with orderId : {}", feedback.getBookingId());
         return "Data sent with orderId : " + feedback.getBookingId();
     }
 
 
     private void sendToActivityTemporalQueue(Feedback feedback) {
-        BookingFeedbackWorkFlow workFlow = worker.getClient().newWorkflowStub(BookingFeedbackWorkFlow.class, WorkflowOptions.newBuilder().setTaskQueue("feedbackActivityTaskQueueWF").setContextPropagators(Collections.singletonList(new MDCContextPropagator())).setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE).setWorkflowId(getServicePlanNo()+"::"+feedback.getBookingId()).build());
+        BookingFeedbackWorkFlow workFlow = worker.getClient()
+                .newWorkflowStub(BookingFeedbackWorkFlow.class, WorkflowOptions.newBuilder()
+                        .setTaskQueue("feedbackActivityTaskQueueWF")
+                        .setContextPropagators(Collections.singletonList(new MDCContextPropagator()))
+                        .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
+                        .setWorkflowId(getServicePlanNo()+"::"+feedback.getBookingId()).build());
         workFlow.sendFeedback(feedback);
     }
 
     private void sendToWorkFlowTemporalQueue(ActivityPlanDomain activityPlanDomain) {
-        WorkflowStub activityPlanWorkLlowStub = worker.getClient().newUntypedWorkflowStub("ActivityPlanWorkflow", WorkflowOptions.newBuilder().setTaskQueue(worker.getActivityPlanTaskQueueName()).setContextPropagators(Collections.singletonList(new MDCContextPropagator())).setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE).setWorkflowId(activityPlanDomain.getOrderId()).build());
+        WorkflowStub activityPlanWorkLlowStub = worker.getClient()
+                .newUntypedWorkflowStub("ActivityPlanWorkflow", WorkflowOptions.newBuilder()
+                        .setTaskQueue(worker.getActivityPlanTaskQueueName())
+                        .setContextPropagators(Collections.singletonList(new MDCContextPropagator()))
+                        .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
+                        .setWorkflowId(activityPlanDomain.getOrderId())
+                        .build());
 
         activityPlanWorkLlowStub.start(activityPlanDomain);
         activityPlanWorkLlowStub.signal(activityPlanDomain.getEventName(), activityPlanDomain);
