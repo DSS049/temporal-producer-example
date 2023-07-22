@@ -2,6 +2,7 @@ package com.temporal.producer.example.config;
 
 import com.maersk.composition.propagator.MDCContextPropagator;
 import com.temporal.producer.example.model.ActivityPlanDomain;
+import com.temporal.producer.example.model.Feedback;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.ActivityStub;
@@ -17,27 +18,28 @@ public class BookingFeedbackWorkflowImpl implements BookingFeedbackWorkFlow {
 
     @Override
     @SneakyThrows
-    public void sendFeedback(ActivityPlanDomain activityPlanDomain) {
-       log.info("Sending feedback to bookingService with orderId: {}", activityPlanDomain.getOrderId());
-        sendToActivityQueue(activityPlanDomain);
-        log.info("Workflow completed for feedback to bookingService with orderId: {}", activityPlanDomain.getOrderId());
+    public void sendFeedback(Feedback feedback) {
+       log.info("Sending feedback to bookingService with bookingId: {}", feedback.getBookingId());
+        sendToActivityQueue(feedback);
+        log.info("Workflow completed for feedback to bookingService with bookingId: {}", feedback.getBookingId());
     }
 
-    private void sendToActivityQueue(ActivityPlanDomain activityPlanDomain) {
+    private void sendToActivityQueue(Feedback feedback) {
         ActivityOptions options = ActivityOptions.newBuilder()
                 .setRetryOptions(
                         RetryOptions.newBuilder()
+                                .setMaximumAttempts(3)
                                 .setInitialInterval(Duration.ofSeconds(1))
                                 .setBackoffCoefficient(2)
                                 .setMaximumInterval(Duration.ofHours(1))
                                 .build())
                 .setStartToCloseTimeout(Duration.ofHours(2))
-                .setTaskQueue("feedbackActivityTaskQueue")
+                .setTaskQueue("FeedbackActivityTaskQueue")
                 .setContextPropagators(Collections.singletonList(new MDCContextPropagator()))
                 .build();
         ActivityStub activity = Workflow.newUntypedActivityStub(options);
 
-        activity.execute("feedbackActivityTaskQueue", String.class, activityPlanDomain);
+        activity.execute("FeedbackActivityTaskQueue", String.class, feedback);
 
     }
 }

@@ -4,6 +4,7 @@ import com.maersk.composition.propagator.MDCContextPropagator;
 import com.temporal.producer.example.config.BookingFeedbackWorkFlow;
 import com.temporal.producer.example.config.TemporalWorkerProducerConfiguration;
 import com.temporal.producer.example.model.ActivityPlanDomain;
+import com.temporal.producer.example.model.Feedback;
 import io.temporal.api.enums.v1.WorkflowIdReusePolicy;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
@@ -13,6 +14,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,46 +27,39 @@ public class TemporalController {
     private TemporalWorkerProducerConfiguration worker;
 
 
-    @GetMapping("/send")
-    public String hello() {
-                ActivityPlanDomain activityPlanDomain = ActivityPlanDomain.builder()
-                .eventName("Ready For Planning")
-                .activityDateTime(Instant.now().toString())
-                .productName("Export Intermodal FCL")
-                .domainName("Booking")
-                .orderId(getServicePlanNo())
-                .bookingId(getServicePlanNo())
-                .userId("dhananjaya.singhar@maersk.com")
-                .status("")
-                .userName("Dhananjaya Samanta Singhar")
-                .domainData("").build();
+    @GetMapping("/send/{bookingId}")
+    public String hello(@PathVariable String bookingId) {
+//                ActivityPlanDomain activityPlanDomain = ActivityPlanDomain.builder()
+//                .eventName("Ready For Planning")
+//                .activityDateTime(Instant.now().toString())
+//                .productName("Export Intermodal FCL")
+//                .domainName("Booking")
+//                .orderId(getServicePlanNo())
+//                .bookingId(getServicePlanNo())
+//                .userId("dhananjaya.singhar@maersk.com")
+//                .status("")
+//                .userName("Dhananjaya Samanta Singhar")
+//                .domainData("").build();
 
-        sendToActivityTemporalQueue(activityPlanDomain);
+        Feedback feedback = Feedback.builder()
+                //.bookingId(getServicePlanNo())
+                .bookingId(bookingId)
+                .workProcessStatus("Send To Execution").timestamp(Instant.now()).build();
 
-        log.info("Data sent with orderId : {}", activityPlanDomain.getOrderId());
-        return  "Data sent with orderId : " + activityPlanDomain.getOrderId();
+        sendToActivityTemporalQueue(feedback);
+
+        log.info("Data sent with orderId : {}", feedback.getBookingId());
+        return "Data sent with orderId : " + feedback.getBookingId();
     }
 
 
-    private void sendToActivityTemporalQueue(ActivityPlanDomain activityPlanDomain) {
-        BookingFeedbackWorkFlow workFlow = worker.getClient().newWorkflowStub(
-                BookingFeedbackWorkFlow.class, WorkflowOptions.newBuilder()
-                        .setTaskQueue("feedbackActivityTaskQueueWF")
-                        .setContextPropagators(Collections.singletonList(new MDCContextPropagator()))
-                        .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
-                        .setWorkflowId(activityPlanDomain.getOrderId())
-                        .build());
-        workFlow.sendFeedback(activityPlanDomain);
+    private void sendToActivityTemporalQueue(Feedback feedback) {
+        BookingFeedbackWorkFlow workFlow = worker.getClient().newWorkflowStub(BookingFeedbackWorkFlow.class, WorkflowOptions.newBuilder().setTaskQueue("feedbackActivityTaskQueueWF").setContextPropagators(Collections.singletonList(new MDCContextPropagator())).setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE).setWorkflowId(getServicePlanNo()+"::"+feedback.getBookingId()).build());
+        workFlow.sendFeedback(feedback);
     }
 
     private void sendToWorkFlowTemporalQueue(ActivityPlanDomain activityPlanDomain) {
-        WorkflowStub activityPlanWorkLlowStub = worker.getClient().newUntypedWorkflowStub(
-                "ActivityPlanWorkflow", WorkflowOptions.newBuilder()
-                        .setTaskQueue(worker.getActivityPlanTaskQueueName())
-                        .setContextPropagators(Collections.singletonList(new MDCContextPropagator()))
-                        .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
-                        .setWorkflowId(activityPlanDomain.getOrderId())
-                        .build());
+        WorkflowStub activityPlanWorkLlowStub = worker.getClient().newUntypedWorkflowStub("ActivityPlanWorkflow", WorkflowOptions.newBuilder().setTaskQueue(worker.getActivityPlanTaskQueueName()).setContextPropagators(Collections.singletonList(new MDCContextPropagator())).setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE).setWorkflowId(activityPlanDomain.getOrderId()).build());
 
         activityPlanWorkLlowStub.start(activityPlanDomain);
         activityPlanWorkLlowStub.signal(activityPlanDomain.getEventName(), activityPlanDomain);
