@@ -32,7 +32,7 @@ public class TemporalController {
     public String hello(@PathVariable String bookingId, @RequestHeader String status) {
         Feedback feedback = Feedback.builder()
                 .bookingId(bookingId)
-                .workProcessStatus(status).timestamp(Instant.now()).build();
+                .workProcessStatus(status).workProcessEndDatetime(Instant.now()).build();
 
         sendToActivityTemporalQueue(feedback);
         log.info("Data sent with orderId : {}", feedback.getBookingId());
@@ -46,7 +46,7 @@ public class TemporalController {
                         .setTaskQueue("feedbackActivityTaskQueueWF")
                         .setContextPropagators(Collections.singletonList(new MDCContextPropagator()))
                         .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
-                        .setWorkflowId(getServicePlanNo()+"::"+feedback.getBookingId()).build());
+                        .setWorkflowId(feedback.getBookingId() + ":" + Instant.now()).build());
         workFlow.sendFeedback(feedback);
     }
 

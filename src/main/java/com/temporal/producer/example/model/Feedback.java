@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 public class Feedback {
     private String bookingId;
     private String workProcessStatus;
-    private Instant timestamp;
+    private Instant workProcessEndDatetime;
 
 }
