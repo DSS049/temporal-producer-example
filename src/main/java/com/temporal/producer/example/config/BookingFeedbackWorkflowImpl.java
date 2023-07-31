@@ -3,6 +3,8 @@ package com.temporal.producer.example.config;
 import com.maersk.composition.propagator.MDCContextPropagator;
 import com.temporal.producer.example.model.ActivityPlanDomain;
 import com.temporal.producer.example.model.Feedback;
+import io.temporal.activity.ActivityInterface;
+import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.ActivityStub;
@@ -34,12 +36,13 @@ public class BookingFeedbackWorkflowImpl implements BookingFeedbackWorkFlow {
                                 .setMaximumInterval(Duration.ofHours(1))
                                 .build())
                 .setStartToCloseTimeout(Duration.ofHours(2))
-                .setTaskQueue("FeedbackActivityTaskQueue")
+                .setTaskQueue("FeedbackActivityDevTaskQueue")
                 .setContextPropagators(Collections.singletonList(new MDCContextPropagator()))
                 .build();
         ActivityStub activity = Workflow.newUntypedActivityStub(options);
 
-        activity.execute("FeedbackActivityTaskQueue", String.class, feedback);
+        activity.executeAsync("feedbackActivity", String.class, feedback).get();
 
+        System.out.println("received response");
     }
 }
