@@ -6,7 +6,6 @@ import com.temporal.producer.example.model.ActivityPlanDomain;
 import com.temporal.producer.example.model.Feedback;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
-import io.temporal.workflow.Async;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
@@ -44,7 +43,7 @@ public class ActivityPlanWorkflowImpl implements ActivityPlanWorkflow {
                 .workProcessEndDatetime(Instant.now()).build();
 
         sendFeedback(feedback);
-        if(activityPlan.getEventName().equals("BOOKING_CONFIRMED")) {
+        if (activityPlan.getEventName().equals("BOOKING_CONFIRMED")) {
             isBookingCompleted = true;
         }
         log.info("Data sent with orderId : {}", feedback.getBookingId());
