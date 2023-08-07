@@ -10,14 +10,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ActivityPlanDomain {
-    private String eventName;
-    private String activityDateTime;
     private String productName;
     private String domainName;
     private String orderId;
     private String bookingId;
+    private String eventName;
     private String userId;
-    private String status;
     private String userName;
+    private String activityDateTime;
+    private ActivityPlanStatusEnum status;
     private String domainData;
 }

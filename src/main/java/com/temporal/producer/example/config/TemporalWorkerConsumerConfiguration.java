@@ -1,6 +1,7 @@
 package com.temporal.producer.example.config;
 
 import com.maersk.composition.service.TemporalClientProvider;
+import com.temporal.producer.example.temporal.ActivityPlanWorkflowImpl;
 import io.temporal.client.WorkflowClient;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
@@ -10,16 +11,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 @Getter
-@Component
+@Configuration
 @RequiredArgsConstructor
-public class TemporalWorkerProducerConfiguration implements ApplicationRunner {
+public class TemporalWorkerConsumerConfiguration implements ApplicationRunner {
 
     private WorkflowClient client;
     private final TemporalClientProvider temporalClientProvider;
-
     @Value("${temporal.activity-plan.task-queue-name}")
     private String activityPlanTaskQueueName;
 
@@ -29,9 +29,8 @@ public class TemporalWorkerProducerConfiguration implements ApplicationRunner {
         client = temporalClientProvider.getTemporalClientInstance();
         WorkerFactoryOptions workerFactoryOptions = temporalClientProvider.getWorkerFactoryOptions();
         WorkerFactory factory = WorkerFactory.newInstance(client, workerFactoryOptions);
-       // Worker worker = factory.newWorker(activityPlanTaskQueueName);
-        Worker worker = factory.newWorker("feedbackActivityTaskQueueWF");
-        worker.registerWorkflowImplementationTypes(BookingFeedbackWorkflowImpl.class);
+        Worker worker = factory.newWorker(activityPlanTaskQueueName);
+        worker.registerWorkflowImplementationTypes(ActivityPlanWorkflowImpl.class);
         factory.start();
     }
 

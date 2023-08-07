@@ -1,11 +1,11 @@
 
-TEMPORAL_TASK_QUEUE_NAME: activityPlanTaskQueue
-TEMPORAL_FEEDBACK_TASK_QUEUE_NAME: feedbackActivityTaskQueue
+TEMPORAL_ACTIVITY_PLAN_TASK_QUEUE: ActivityPlanLocalTaskQueue
+TEMPORAL_FEEDBACK_TASK_QUEUE: FeedbackActivityLocalTaskQueue
 
 server:
   port: 8086
 temporal:
   activity-plan:
-    task-queue-name: ${TEMPORAL_TASK_QUEUE_NAME}
+    task-queue-name: ${TEMPORAL_ACTIVITY_PLAN_TASK_QUEUE}
   feedback:
-    task-queue-name: ${TEMPORAL_FEEDBACK_TASK_QUEUE_NAME}
+    task-queue-name: ${TEMPORAL_FEEDBACK_TASK_QUEUE}
